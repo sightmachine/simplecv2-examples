@@ -6,12 +6,13 @@ were you are verifying that the correct number of pills are present
 
 from simplecv.api import Image, Color, Blob
 
-pillcolor = (153, 198, 252)  # This is set manually, you could either open the image you want and pick the color, or use blob detection to find the blob and do .mean_color() to get the RGB value
+pillcolor = (153, 198, 252)  # This is set manually, you could either open the image you want and pick the color,
+                             # or use blob detection to find the blob and do .mean_color() to get the RGB value
 i = Image("pills.png", sample=True)
 expected_pillcount = 12
 saturation_threshold = 40  # This is how much saturation to allow in the image
-pill_size = 100 # The size of the expected pills in pixels
-packblobs = i.find(Blob, minsize=10) #find the bright silver on back blackground, easy
+pill_size = 100  # The size of the expected pills in pixels
+packblobs = i.find(Blob, minsize=10)  # find the bright silver on back background, easy
 
 
 # run through the list of pills (blobs) found and check their color and markup the image when they are found
@@ -43,7 +44,7 @@ for idx in range(len(packblobs)):
         i.dl().text('OK', (packblobs[idx].x, packblobs[idx].y + 150), color=Color.GREEN)
 
 
-#Continue to show the image
+# Continue to show the image
 while True:
     i.show()
 

@@ -1,14 +1,16 @@
-from simplecv import *
+import time
 
-def movement_check(x = 0,y = 0,t=1):
-    direction = ""
+from simplecv.api import Camera, Motion
+
+
+def movement_check(x=0, y=0, t=1):
     directionX = ""
     directionY = ""
     if x > t:
         directionX = "Right"
-    if x < -1*t:
+    if x < - 1 * t:
         directionX = "Left"
-    if y < -1*t:
+    if y < -1 * t:
         directionY = "Up"
     if y > t:
         directionY = "Down"
@@ -20,38 +22,38 @@ def movement_check(x = 0,y = 0,t=1):
         return "No Motion"
 
 def main():
-    scale_amount = (200,150)
-    d = Display(scale_amount)
+    scale_amount = (200, 150)
     cam = Camera(0)
-    prev = cam.getImage().scale(scale_amount[0],scale_amount[1])
+    prev = cam.get_image().resize(scale_amount[0], scale_amount[1])
     time.sleep(0.5)
     t = 0.5
     buffer = 20
     count = 0
-    while d.isNotDone():
-        current = cam.getImage()
-        current = current.scale(scale_amount[0],scale_amount[1])
-        if( count < buffer ):
+
+    while True:
+        current = cam.get_image()
+        current = current.resize(scale_amount[0], scale_amount[1])
+        if count < buffer:
             count = count + 1
         else:
-            fs = current.find_motion(prev, window=15, method="BM")
-            lengthOfFs = len(fs)
+            fs = current.find(Motion, prev, window=15, method="BM")
+            length_of_fs = len(fs)
             if fs:
-                #~ fs.draw(color=Color.RED)
                 dx = 0
                 dy = 0
                 for f in fs:
                     dx = dx + f.dx
                     dy = dy + f.dy
 
-                dx = (dx / lengthOfFs)
-                dy = (dy / lengthOfFs)
-                motionStr = movement_check(dx,dy,t)
-                current.draw_text(motionStr,10,10)
+                dx = dx / length_of_fs
+                dy = dy / length_of_fs
+                motion_str = movement_check(dx, dy, t)
+                current.dl().text(motion_str, (10, 10))
 
         prev = current
         time.sleep(0.01)
-        current.save(d)
+        current.show()
+
 
 if __name__ == '__main__':
     main()

@@ -1,10 +1,10 @@
 #!/usr/bin/python
-'''
+"""
 This example just takes an image, finds the edges, and draws them
 the threshold is used for the edge detection, if you adjust the
 max_threshold and threshold_step values and run the program you will
 see it change over time
-'''
+"""
 print __doc__
 
 from simplecv.api import Camera, Color
@@ -23,7 +23,7 @@ while True:
     if threshold <= 0:
         threshold = max_threshold
     else:
-        threshold = threshold - 0.5
+        threshold -= 0.5
 
-    edged_image.draw_text("Current Edge Threshold:" + str(threshold), (10, 20), color=Color.GREEN)
+    edged_image.dl().text("Current Edge Threshold:" + str(threshold), (10, 20), color=Color.GREEN)
     edged_image.show()
