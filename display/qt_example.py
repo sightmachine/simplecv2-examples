@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-'''
+"""
 This example shows how to display a SimpleCV image in a QT window
 the code was taken from the forum post here:
 http://help.simplecv.org/question/1866/any-simple-pyqt-sample-regarding-ui-or-display/
 
 Author: Rodrigo gomes 
-'''
+"""
 
-import os
+
 import sys
-import signal
-from PyQt4 import uic, QtGui, QtCore
-from simplecv import *
+
+from PyQt4 import QtGui, QtCore
+from simplecv.api import Camera,Color
 
 
 try:
@@ -27,6 +27,7 @@ try:
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -49,22 +50,23 @@ class Webcam(QtGui.QMainWindow):
         QtGui.QWidget.__init__(self,parent)        
         self.MainWindow = Ui_Dialog()
         self.MainWindow.setupUi(self)
-        self.webcam = Camera(0,{ "width": 640, "height": 480 })
+        self.webcam = Camera(0, {"width": 640, "height": 480})
 
         self.timer = QtCore.QTimer()
 
         self.connect(self.timer, QtCore.SIGNAL('timeout()'), self.show_frame)
 
-        self.timer.start(1);
+        self.timer.start(1)
 
     def show_frame(self):
-        ipl_image = self.webcam.getImage()
-        ipl_image.dl().circle((150, 75), 50, Color.RED, filled = True)
-        data = ipl_image.get_bitmap().tostring()
+        ipl_image = self.webcam.get_image()
+        ipl_image.dl().circle((150, 75), 50, Color.RED, filled=True)
+        data = ipl_image.tostring()
         image = QtGui.QImage(data, ipl_image.width, ipl_image.height, 3 * ipl_image.width, QtGui.QImage.Format_RGB888)
         pixmap = QtGui.QPixmap()
         pixmap.convertFromImage(image.rgbSwapped())
         self.MainWindow.label.setPixmap(pixmap)
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

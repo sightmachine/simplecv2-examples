@@ -2,8 +2,6 @@
 '''
 This program just shows off a simple example of using GTK with SimpleCV
 
-This example interfaces with a Camera in real time
-
 It's a very simple way to update an image using python and GTK.
 The image is being updated as the slider is moved.
 The only amount of SimpleCV code is found in the process_image() function
@@ -13,10 +11,8 @@ The only amount of SimpleCV code is found in the process_image() function
 print __doc__
 
 import gtk
-import simplecv
-import gobject
+from simplecv.api import Image
 
-cam = simplecv.Camera()
 
 class app(gtk.Window):
 
@@ -26,8 +22,8 @@ class app(gtk.Window):
     min_threshold = 0
     window_width = 500
     window_height = 500
-    refresh_rate = 100 #in milliseconds
     #End Program Settings
+
 
     #Variables
     current_image = None
@@ -67,15 +63,10 @@ class app(gtk.Window):
         vbox.add(image)
 
 
-        gobject.timeout_add(self.refresh_rate, self.refresh)
         self.current_image = image
         self.add(vbox)
         self.show_all()
 
-
-    def refresh(self):
-        self.update_image()
-        return True
 
     '''
     This is where you can do any of your SimpleCV processing
@@ -83,25 +74,27 @@ class app(gtk.Window):
     '''
     def process_image(self):
         #Start SimpleCV Code
-        img = cam.getImage().rotate90()
-        edges = img.edges(self.edge_threshold)
-        numpy_img = edges.get_numpy()
+        img = Image('lenna').rotate90().edges(self.edge_threshold).to_rgb()
         #End SimpleCV Code
-        return numpy_img
-
-    def update_image(self):
-        updated_image = self.process_image()
-        converted_image = gtk.gdk.pixbuf_new_from_array(updated_image, gtk.gdk.COLORSPACE_RGB, 8)
-        self.current_image.set_from_pixbuf(converted_image)
-        self.show_all()
+        return img
 
 
     #This function is called anything the slider is moved
     def update_threshold(self, w):
         #grab the value from the slider
         self.edge_threshold = w.get_value()
-        self.update_image()
 
+        updated_image = self.process_image()
+        converted_image = gtk.gdk.pixbuf_new_from_array(updated_image, gtk.gdk.COLORSPACE_RGB, 8)
+        self.current_image.set_from_pixbuf(converted_image)
+        self.show_all()
 
+'''
+Just create multiple instances of the object to have multiple windows
+with varying control on each window.  These could also be extended using
+threading so they could talk together, or if you closed one, it wouldn't
+close the others, etc.
+'''
 program1 = app()
+program2 = app()
 gtk.main()
