@@ -5,10 +5,13 @@
 #
 # Using jpegcam as flash webcam library:
 # http://code.google.com/p/jpegcam/
-import os, tempfile, webbrowser, urllib, cherrypy, socket
-from simplecv import *
+import tempfile
+import os
+
+from simplecv.api import Image
 from images2gif import writeGif
-import pdb
+import cherrypy
+import urllib
 
 
 class CloudAnimator(object):
@@ -18,43 +21,45 @@ class CloudAnimator(object):
 
 
     def index(self):
-        f = urllib.urlopen("index.html") # load the default website
-        s = f.read() # read the file
+        f = urllib.urlopen("index.html")  # load the default website
+        s = f.read()  # read the file
         f.close()
         return s
+
     index.exposed = True
 
     def update(self):
-        #update the animation
+        # update the animation
         print "update animation"
 
     update.exposed = True
 
     def upload(self):
-        if(self.giffile == None):
+        if (self.giffile == None):
             tmpfile = tempfile.NamedTemporaryFile(suffix=".gif")
-            tmpname = tmpfile.name.split("/")[-1] #grab the generated name
+            tmpname = tmpfile.name.split("/")[-1]  # grab the generated name
             filepath = os.getcwd() + "/" + tmpname
             self.giffile = filepath
             self.gifname = tmpname
-        tmpfile = tempfile.NamedTemporaryFile(suffix=".jpg") #Make a temporary gif file
-        tmpname = tmpfile.name.split("/")[-1] #grab the generated name
-        filepath = os.getcwd() + "/" + tmpname #get the filepath
-        outfile = open(filepath, 'w') # create the filestream to write output to
-        outfile.write(cherrypy.serving.request.body.fp.read()) # read the raw data from the webserver and write to the temporary directory
-        outfile.close() # close the temporary file
-        self.process(filepath) #Use SimpleCV to process the image
+        tmpfile = tempfile.NamedTemporaryFile(suffix=".jpg")  # Make a temporary gif file
+        tmpname = tmpfile.name.split("/")[-1]  # grab the generated name
+        filepath = os.getcwd() + "/" + tmpname  # get the filepath
+        outfile = open(filepath, 'w')  # create the filestream to write output to
+        # read the raw data from the webserver and write to the temporary directory
+        outfile.write(cherrypy.serving.request.body.fp.read())
+        outfile.close()  # close the temporary file
+        self.process(filepath)  # Use SimpleCV to process the image
         os.unlink(filepath)
-        return self.gifname #return the image path via ajax request
+        return self.gifname  # return the image path via ajax request
 
     upload.exposed = True
 
     def reset(self):
-        #reset the animation
-        if(self.giffile != None):
+        # reset the animation
+        if (self.giffile != None):
             os.unlink(self.giffile)
             tmpfile = tempfile.NamedTemporaryFile(suffix=".gif")
-            tmpname = tmpfile.name.split("/")[-1] #grab the generated name
+            tmpname = tmpfile.name.split("/")[-1]  #grab the generated name
             filepath = os.getcwd() + "/" + tmpname
             #~ pdb.set_trace()
             for i in self.imageset:
@@ -67,28 +72,27 @@ class CloudAnimator(object):
     reset.exposed = True
 
     def process(self, filepath):
-        img = Image(filepath) # load the image into SimpleCV
-        #~ img = img.edges() # Get the edges
-        img.save(filepath) # save the temporary image
-        self.imageset.append(img.getPIL())
+        img = Image(filepath)  # load the image into SimpleCV
+        # ~ img = img.edges() # Get the edges
+        img.save(filepath)  # save the temporary image
+        self.imageset.append(img.get_pil())
         writeGif(self.giffile, self.imageset, 0.2, 9999)
         return
 
     process.exposed = True
 
 
-
 if __name__ == '__main__':
-    conf =  {'/':
+    conf = {'/':
                 {
-                'tools.staticdir.on': True,
-                'tools.staticdir.dir': os.getcwd()
+                    'tools.staticdir.on': True,
+                    'tools.staticdir.dir': os.getcwd()
                 },
-            'global' :
+            'global':
                 {
-                'server.socket_port': 8000,
-                'server.socket_host' : '0.0.0.0'
+                    'server.socket_port': 8000,
+                    'server.socket_host': '0.0.0.0'
                 }
-            }
-    #webbrowser.open("http://localhost:8000")
+    }
+
     cherrypy.quickstart(CloudAnimator(), config=conf)

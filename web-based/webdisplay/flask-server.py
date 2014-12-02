@@ -1,4 +1,4 @@
-'''
+"""
 This application uses Flask as a web server and jquery to trigger
 pictures with SimpleCV
 
@@ -11,20 +11,20 @@ Then to run the application:
 *Note: You are not required to run the webkit-gtk.py, you can also
 visit http://localhost:5000
 
-'''
-
+"""
 print __doc__
 
 
 from flask import Flask, jsonify, render_template, request
 from werkzeug import SharedDataMiddleware
-import tempfile, os
+import tempfile
 import simplejson as json
-import simplecv
+from simplecv.api import Camera
 
 
 app = Flask(__name__)
-cam = simplecv.Camera()
+cam = Camera()
+
 
 @app.route('/')
 def show(name=None):
@@ -35,13 +35,14 @@ def show(name=None):
     img.save(loc)
     return render_template('index.html', img=loc)
 
+
 @app.route('/_snapshot')
 def snapshot():
-    '''
+    """
     Takes a picture and returns a path via json
     used as ajax callback for taking a picture
-    '''
-    img = cam.getImage()
+    """
+    img = cam.get_image()
     tf = tempfile.NamedTemporaryFile(suffix=".png")
     loc = 'static/' + tf.name.split('/')[-1]
     tf.close()
@@ -49,6 +50,7 @@ def snapshot():
     print "location",loc
     print "json", json.dumps(loc)
     return json.dumps(loc)
+
 
 if __name__ == '__main__':
     if app.config['DEBUG']:
